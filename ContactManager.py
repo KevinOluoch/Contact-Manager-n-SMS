@@ -2,6 +2,8 @@
 # [-*- coding: utf-8 -*-[]
 """
 Contacts Manager + SMS.
+This Application can be used to store names and phone numbers in contacts
+and send SMS to a number in contacts
 Usage:
     contacts add -n ,<name> -p <phone_number>
     contacts search <name>
@@ -9,6 +11,7 @@ Usage:
     contacts --version
     contacts (-i | --interactive)
     contacts (-h | --help)
+    contacts quit
 
 
 Options:
@@ -20,32 +23,38 @@ Options:
 import sys
 import cmd
 from docopt import docopt, DocoptExit
+from colorama import Fore, Back
+
+import search
+import sms
 
 from sqlalchemy import *
-db = create_engine('sqlite:///test7.db')
-db.echo = True
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+db = create_engine('sqlite:///:memory:', echo=False)
 metadata = MetaData(db)
+create_session = sessionmaker(bind=db)
 session = create_session()
 
-phone_book = Table('users', metadata,
-    Column('user_id', Integer, primary_key=True, autoincrement=True),
-    Column('name', String(40), nullable=False),
-    Column('age', Integer, nullable=False)
-)
-phone_book.create()
 
-class Contacts(object):
-    def __init__(self, name, phone_number):
-        self.name = name
-        self.phone_number = phone_number
-    #def __repr__(self):
-     #   return 'Article %d: "%s"' % (self.article_id, self.headline)
+class Contacts(Base):
+    __tablename__ = 'contacts'
+    user_id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String)
+    second_name = Column(String)
+    phone_number = Column(Integer)
 
+
+Base.metadata.create_all(db)
+     
 
 def docopt_cmd(func):
     """
     This decorator is used to simplify the try/except block and pass the result
     of the docopt parsing to the called action.
+    NOTE: Copied from, https://github.com/docopt/docopt/blob/master/examples/interactive_example.py
     """
 
     def fn(self, arg):
@@ -75,9 +84,35 @@ def docopt_cmd(func):
 
 
 class ContactManager(cmd.Cmd):
-    intro = 'Welcome to Contacts Manager' \
+    
+    print Fore.YELLOW +"___________________________________________________________________________________"
+    print Fore.RED +   "___________________________________________________________________________________"
+    print Fore.WHITE + "   ****    *****    ***    **  ********   **         ****  ********   ******       "
+    print Fore.WHITE + " **      **     **  ****   **     **     ** **     **         **     **    **      "
+    print Fore.WHITE + "**       **     **  ** **  **     **    **   **   **          **     **            "
+    print Fore.GREEN + "**       **     **  **  ** **     **   **  *  **  **          **      ** ***       "
+    print Fore.WHITE + "**       **     **  **   ****     **   ** *** **  **          **           **      "
+    print Fore.WHITE + " **      **     **  **    ***     **   **     **   **         **     **    **      "
+    print Fore.WHITE + "   *****   *****    **     **     **   **     **     *****    **      ******       "
+    print Fore.RED +   "___________________________________________________________________________________"
+    print Fore.MAGENTA+"                  THE CONTACT MANAGER + SMS APP                                    "
+    print Fore.YELLOW +"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
+    print"""
+    Commands:
+            add -n ,<name> -p <phone_number>
+            search <name>
+            text <name> -m <message>...
+    Options:
+            --version
+            (-i | --interactive)
+            (-h | --help)
+            quit
+    """
+
+    intro = 'Welcome to Contacts Manager \n' \
         + ' Contacts Manager manages contacts for you and can send an SMS to any contact\n' \
-        + ' (type help for a list of commands.)'
+        + ' You can type "help" for a list of commands.'
     prompt = '(Contact Manager) '
     file = None
 
@@ -85,13 +120,26 @@ class ContactManager(cmd.Cmd):
     def do_add(self, arg):
         """
         Add contacts.
-        Usage: add -n name -p phone_number
+        Usage: add -n <name> -p <phone_number>
         """
         if isinstance(arg['<name>'], str) and arg['<phone_number>'].isdigit():
-            print(arg)
-            a1=Contacts(arg['<name>'],arg['<phone_number>'])
-            session.save(a1)
-            print 'Good Job'
+            print "What is %s's second name" %(arg['<name>'])
+
+            while True:
+                second_name = raw_input("Enter Second name or 0 to ignore: ")
+                if second_name == "0":
+                    second_name="unknown"
+                    break
+                elif second_name:
+                    break
+                else:
+                    #no input
+                    pass
+
+            entry = Contacts(name=arg['<name>'], second_name=second_name, phone_number= arg['<phone_number>'])
+            session.add(entry)
+
+            print '%s has been saved to contacts' % (arg['<name>'] )
         else:
             print "The name must be of type string and phone number type interger"
 
@@ -100,24 +148,50 @@ class ContactManager(cmd.Cmd):
     @docopt_cmd
     def do_search(self, arg):
         """
-        Add contacts.
+        Search for a contacts.
         Usage: search <name>
         """
+        print arg['<name>']
+        found = search.search(arg, Contacts, session)
 
-        print(arg)
+        if found[0] == 1:
+            print found [1]
+
+        elif found[0] == 2:
+            print found[1]
+
+        else:
+            pass
+
+        #print search_results
+        #print(arg)
+
     @docopt_cmd
     def do_text(self, arg):
         """
-        Add contacts.
+        sends texts to people in contacts.
         Usage: text <name> -m <message>...
         """
 
-        print(arg)
+        found = search.search(arg, Contacts, session)
+        if found[0] == 1:
+            print found [1]
+        elif found[0] == 2:
+            receiver_number = found[2]
+            print "Texting %s ......" %(arg['<name>'])
+            feedback = sms.text(receiver_number, ' '.join(arg['<message>']))
+            print feedback[0]['status']
+        else:
+            pass
+
+        
     
     @docopt_cmd
     def do_quit(self, arg):
-        """Quits out of Interactive Mode."""
-
+        """Quits out of Interactive Mode.
+        Usage: quit
+        """
+        session.commit()
         print('Good Bye!')
         exit()
 
