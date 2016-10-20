@@ -35,7 +35,7 @@ import sms
 
 # Database connection
 Base = declarative_base()
-db = create_engine('sqlite:///:memory:', echo=False)
+db = create_engine('sqlite:///ContactManager.db', echo=False)
 metadata = MetaData(db)
 create_session = sessionmaker(bind=db)
 session = create_session()
