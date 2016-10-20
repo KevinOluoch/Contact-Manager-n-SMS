@@ -28,10 +28,14 @@ It has the following features
    appropriate SMS Gateway API e.g. Twilio, AfricasTalking, etc. The   
    contacts should be synced with Firebase (extra credit).
 
-Dependencies
+**Dependencies**
+
 The app requires the following python packages:
+
 *SQLAlchemy* -is a Python SQL toolkit and Object Relational Mapper that provides the full power and flexibility of SQL.
+
 *docopt* -This package is a automatically creates a given command line interface
+
 *colorama* -used to produce colored terminal text and cursor positioning 
 
 **Installing and runnning ContactManager on your Computer**
