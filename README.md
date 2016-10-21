@@ -41,10 +41,15 @@ The app requires the following python packages:
 **Installing and runnning ContactManager on your Computer**
 
 Clone this repository
+
 git clone
+
 https://github.com/KevinOluoch/bc-10-Contact_Manager_n_SMS.git
+
 Do a pip install for the dependancies
+
 pip freeze > requirements.txt
+
 Then run ContactManager.py -i.
 
 **TDD**
