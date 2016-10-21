@@ -55,4 +55,5 @@ There are two tests cases that the sms package has to pass. They test the return
 
 
 **Issues**
+
 FireBase sync has not yet to be implemented.
