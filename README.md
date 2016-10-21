@@ -47,6 +47,12 @@ Do a pip install for the dependancies
 pip freeze > requirements.txt
 Then run ContactManager.py -i.
 
+**TDD**
+
+A  test has been written for the sms package.
+There are two tests cases that the sms package has to pass. They test the return value if a valid phone number is passes to the function or if an invalid phone number is passed.
+
+
 
 **Issues**
 FireBase sync has not yet to be implemented.
