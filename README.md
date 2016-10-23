@@ -8,7 +8,7 @@ It enables the user to manage contacts and send text messages.
 
 **Features**
 
-It has the following features
+It is expected to have the following features:
 
  - A user should be able to add a person to the contacts list with the
    following command: `add -n <name> -p <phone number>` The command
