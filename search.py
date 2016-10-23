@@ -9,7 +9,7 @@ def search(arg, Contacts, session):
 	count = 1
 	# Searching for all entries matching the request name and storing them in a list
 	for entry in session.query(Contacts):
-		if arg['<name>'] == entry.name:
+		if arg['<name>'] == entry.name or arg['<name>'] == entry.second_name:
 			search_results.append({
 				                   'count' : count, 'name' : entry.name,
 			                       'second_name' : entry.second_name,
